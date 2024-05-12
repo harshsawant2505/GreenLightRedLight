@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Detection</title>
+   
+</head>
+<body style="color:white;  background-color: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Press Start 2P', cursive;  gap: 10px;">
+    <h1 style="color: white;">Stop at RED light and GO at GREEN light</h1>
+    <div id="green" style="width: 60px; height: 60px;"></div>
+    <!-- <div id="status"></div> -->
+    <div id="start"></div>
+    <img id="video_feed" src="">
+    <div id="over" style="height: 100%; width: 100%; position: absolute; z-index: 100; background-color: red; opacity: 0.4; display: none;"></div>
+    <script>
+        var green = true
+        document.addEventListener('keydown', (event)=> {    
+                            window.location.href = "/winner"
+                    });
+                   
+        
+        function getStatus() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/status", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                  
+
+                     
+                     
+                   
+                    if(response.status == "Movement Detected"){
+                            if(!green){
+                                // document.getElementById("over").style.display = "block";
+                                window.location.href = "/gameover"
+                            }
+                    
+                    }else{
+                        // document.getElementById("over").style.display = "none";
+                        document.addEventListener("keypress",()=>{
+                            if(!green){
+                                window.location.href = "/gameover"  
+                            }
+                        })
+                    }
+
+                    
+                }
+            };
+            xhr.send();
+        }
+
+
+        function getFrame() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/frame", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById("video_feed").src = 'data:image/jpeg;base64,' + response.frame;
+                }
+            };
+            xhr.send();
+        }
+
+        function startDetection() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/start_detection", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Detection started
+                }
+            };
+            xhr.send();
+        }
+        
+        function greenlight(){
+           
+           
+                green = !green
+                if(green){
+                    
+                    document.getElementById("green").style.background = "green";
+                }else{
+                    document.getElementById("green").style.background = "red";
+                }
+                
+        }
+        
+
+
+        // Call getStatus every second to update the status
+       
+          
+               setTimeout(() => {
+                setInterval(getStatus, 1000);
+                setInterval(greenlight,3000)
+               }, 5000);
+                
+
+            
+           
+       
+        
+
+        // Call getFrame every 100 milliseconds to update the video feed
+        setInterval(getFrame, 100);
+        
+        // Start detection when the page loads
+        startDetection();
+    </script>
+    
+</body>
+</html>
